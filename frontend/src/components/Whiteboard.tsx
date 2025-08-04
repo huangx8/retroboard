@@ -14,7 +14,7 @@ import './Whiteboard.css'
 
 interface WhiteboardObject {
   id: string
-  type: 'rectangle' | 'circle' | 'line' | 'image' | 'video'
+  type: 'rectangle' | 'circle' | 'line' | 'image' | 'video' | 'text'
   x: number
   y: number
   width?: number
@@ -394,6 +394,26 @@ const Whiteboard = () => {
     }
   }
 
+  const handleTextCreation = (position: { x: number; y: number }) => {
+    const textContent = prompt('Enter text:')
+    if (textContent && textContent.trim()) {
+      const newTextObject: WhiteboardObject = {
+        id: uuidv4(),
+        type: 'text',
+        x: position.x,
+        y: position.y,
+        text: textContent.trim(),
+        fontSize: 24,
+        fill: user?.color || '#333',
+        createdBy: user?.id
+      }
+
+      if (socket) {
+        socket.emit('object-add', { object: newTextObject })
+      }
+    }
+  }
+
   const handleStageMouseDown = (e: any) => {
     if (selectedTool === 'select') return
 
@@ -413,6 +433,8 @@ const Whiteboard = () => {
       handleImageUpload(adjustedPosition)
     } else if (selectedTool === 'video') {
       handleVideoEmbed(adjustedPosition)
+    } else if (selectedTool === 'text') {
+      handleTextCreation(adjustedPosition)
     } else {
       // Create new shape
       const shapeWidth = 100

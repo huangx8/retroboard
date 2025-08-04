@@ -4,7 +4,7 @@ import Konva from 'konva'
 
 interface WhiteboardObject {
   id: string
-  type: 'rectangle' | 'circle' | 'line' | 'image' | 'video'
+  type: 'rectangle' | 'circle' | 'line' | 'image' | 'video' | 'text'
   x: number
   y: number
   width?: number
@@ -108,11 +108,16 @@ const DrawableShape = ({
   }
 
   const handleDoubleClick = () => {
-    // Allow text editing for rectangles and video URL editing for videos
+    // Allow text editing for rectangles, text objects, and video URL editing for videos
     if (object.type === 'rectangle') {
       const newText = prompt('Enter text for this rectangle:', object.text || '')
       if (newText !== null) {
         onUpdate(object.id, { text: newText })
+      }
+    } else if (object.type === 'text') {
+      const newText = prompt('Edit text:', object.text || '')
+      if (newText !== null && newText.trim()) {
+        onUpdate(object.id, { text: newText.trim() })
       }
     } else if (object.type === 'video') {
       const newVideoUrl = prompt('Enter video URL (YouTube, Vimeo, etc.):', object.videoUrl || '')
@@ -216,6 +221,21 @@ const DrawableShape = ({
             width={object.width || 200}
             height={object.height || 200}
             image={imageElement || undefined}
+          />
+        )
+
+      case 'text':
+        return (
+          <Text
+            {...commonProps}
+            x={object.x}
+            y={object.y}
+            text={object.text || 'Text'}
+            fontSize={object.fontSize || 24}
+            fontFamily="Arial"
+            fill={object.fill || '#333'}
+            // Make text area transparent but still selectable
+            padding={5}
           />
         )
 

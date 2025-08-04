@@ -5,6 +5,7 @@ import {
   Pen, 
   Image, 
   Video,
+  Type,
   Download,
   Trash2,
   ZoomIn,
@@ -28,6 +29,7 @@ const tools = [
   { id: 'rectangle', icon: Square, label: 'Rectangle' },
   { id: 'circle', icon: Circle, label: 'Circle' },
   { id: 'pen', icon: Pen, label: 'Pen' },
+  { id: 'text', icon: Type, label: 'Text' },
   { id: 'image', icon: Image, label: 'Image' },
   { id: 'video', icon: Video, label: 'Video' },
 ]
