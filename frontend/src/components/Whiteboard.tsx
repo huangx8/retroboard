@@ -283,30 +283,50 @@ const Whiteboard = () => {
               alert('Error loading image.')
             }
             img.onload = () => {
-              const maxWidth = 300
-              const maxHeight = 300
+              // Increase max dimensions for better quality
+              const maxWidth = 800
+              const maxHeight = 800
               let width = img.width
               let height = img.height
 
-              // Scale down if too large
+              // Scale down only if significantly larger
               if (width > maxWidth || height > maxHeight) {
                 const ratio = Math.min(maxWidth / width, maxHeight / height)
                 width *= ratio
                 height *= ratio
               }
 
-              // Create canvas to compress image if needed
+              // Create canvas with proper DPI handling
               const canvas = document.createElement('canvas')
               const ctx = canvas.getContext('2d')
-              canvas.width = width
-              canvas.height = height
-              
+              const pixelRatio = window.devicePixelRatio || 1
+
+              // Set canvas size accounting for device pixel ratio
+              canvas.width = width * pixelRatio
+              canvas.height = height * pixelRatio
+              canvas.style.width = width + 'px'
+              canvas.style.height = height + 'px'
+
               if (ctx) {
+                // Scale context to match device pixel ratio
+                ctx.scale(pixelRatio, pixelRatio)
+
+                // Use better image smoothing
+                ctx.imageSmoothingEnabled = true
+                ctx.imageSmoothingQuality = 'high'
+
                 ctx.drawImage(img, 0, 0, width, height)
-                // Compress to JPEG with 80% quality to reduce file size
-                const compressedSrc = canvas.toDataURL('image/jpeg', 0.8)
-                
-                console.log(`Image compressed: ${Math.round(imageSrc.length / 1024)}KB -> ${Math.round(compressedSrc.length / 1024)}KB`)
+
+                // Use PNG for better quality or higher JPEG quality
+                let compressedSrc: string
+                if (file.size < 1024 * 1024) { // If original is < 1MB, use PNG
+                  compressedSrc = canvas.toDataURL('image/png')
+                } else {
+                  // Use higher quality JPEG compression (95% instead of 80%)
+                  compressedSrc = canvas.toDataURL('image/jpeg', 0.95)
+                }
+
+                console.log(`Image processed: ${Math.round(imageSrc.length / 1024)}KB -> ${Math.round(compressedSrc.length / 1024)}KB`)
 
                 const newImageObject: WhiteboardObject = {
                   id: uuidv4(),
@@ -696,8 +716,8 @@ const Whiteboard = () => {
           </Layer>
         </Stage>
 
-        <UserCursors cursors={cursors} />
-        
+        <UserCursors cursors={cursors} currentUserId={user?.id} />
+
         {/* Online Users List */}
         <OnlineUsersList
           users={cursors.map(cursor => ({

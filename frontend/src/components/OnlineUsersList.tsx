@@ -13,22 +13,38 @@ interface OnlineUsersListProps {
 }
 
 const OnlineUsersList: React.FC<OnlineUsersListProps> = ({ users, currentUserId }) => {
-  if (users.length === 0) return null;
+  // Ensure current user is always included and sort users with current user first
+  const sortedUsers = [...users].sort((a, b) => {
+    if (a.userId === currentUserId) return -1;
+    if (b.userId === currentUserId) return 1;
+    return a.userName.localeCompare(b.userName);
+  });
 
   return (
     <div className="online-users-list">
       <div className="online-users-header">
-        <span className="online-indicator"></span>
-        <span>Online ({users.length})</span>
+        <span className="online-indicator">●</span>
+        Online ({sortedUsers.length})
       </div>
-      <ul>
-        {users.map(user => (
-          <li key={user.userId} className={user.userId === currentUserId ? 'current-user' : ''}>
-            <span className="user-color-dot" style={{ backgroundColor: user.color }}></span>
-            <span className="user-name">{user.userName}{user.userId === currentUserId ? ' (You)' : ''}</span>
-          </li>
+      <div className="users-container">
+        {sortedUsers.map(user => (
+          <div
+            key={user.userId}
+            className={`user-item ${user.userId === currentUserId ? 'current-user' : ''}`}
+          >
+            <div
+              className="user-avatar"
+              style={{ backgroundColor: user.color }}
+            >
+              {user.userName.charAt(0).toUpperCase()}
+            </div>
+            <span className="user-name">
+              {user.userName}
+              {user.userId === currentUserId && ' (You)'}
+            </span>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };

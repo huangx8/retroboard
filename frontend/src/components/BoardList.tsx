@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import TemplateSelector from './TemplateSelector'
 import './BoardList.css'
 
 interface Board {
@@ -11,25 +10,11 @@ interface Board {
   createdAt: string
 }
 
-interface Template {
-  id: string
-  name: string
-  description: string
-  icon: React.ComponentType<any>
-  sections: Array<{
-    title: string
-    color: string
-    x: number
-    y: number
-  }>
-}
-
 const BoardList = () => {
   const [boards, setBoards] = useState<Board[]>([])
   const [newBoardName, setNewBoardName] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [showTemplateSelector, setShowTemplateSelector] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -73,39 +58,6 @@ const BoardList = () => {
       }
 
       const newBoard = await response.json()
-      navigate(`/board/${newBoard.id}`)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create board')
-      console.error('Error creating board:', err)
-    }
-  }
-
-  const showTemplateSelectorModal = () => {
-    setShowTemplateSelector(true)
-  }
-
-  const createBoardWithTemplate = async (template: Template) => {
-    try {
-      const boardName = newBoardName || `${template.name} Board ${boards.length + 1}`
-
-      const response = await fetch(`${import.meta.env.VITE_SERVER_URL || 'http://localhost:3000'}/api/boards`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: boardName,
-          template: template
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to create board')
-      }
-
-      const newBoard = await response.json()
-      setShowTemplateSelector(false)
-      setNewBoardName('')
       navigate(`/board/${newBoard.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create board')
@@ -160,18 +112,8 @@ const BoardList = () => {
           <button onClick={createNewBoard} className="create-btn">
             Create New Board
           </button>
-          <button onClick={showTemplateSelectorModal} className="template-btn">
-            📂 Use Template
-          </button>
         </div>
       </div>
-
-      {showTemplateSelector && (
-        <TemplateSelector
-          onTemplateSelect={createBoardWithTemplate}
-          onClose={() => setShowTemplateSelector(false)}
-        />
-      )}
 
       <div className="boards-grid">
         {loading ? (

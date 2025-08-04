@@ -74,10 +74,12 @@ const DrawableShape = ({
     const node = e.target
 
     if (object.type === 'circle') {
-      // For circles, convert center position back to top-left corner
+      // For circles, the node position is the center, but we store top-left corner
+      // So we need to subtract radius to get the corner position
+      const radius = (object.width || 100) / 2
       onUpdate(object.id, {
-        x: node.x() - (object.width || 100) / 2,
-        y: node.y() - (object.height || 100) / 2
+        x: node.x() - radius,
+        y: node.y() - radius
       })
     } else {
       // For other shapes, use the position directly
