@@ -40,8 +40,8 @@ io.on('connection', (socket) => {
   handleConnection(io, socket);
 });
 
-server.listen(config.port, () => {
-  console.log(`RetroBoard server running on port ${config.port}`);
+server.listen(config.port, '0.0.0.0', () => {
+  console.log(`RetroBoard server running on port ${config.port} and accessible externally`);
 });
 
 module.exports = { app, server, io };
