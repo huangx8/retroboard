@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
-import { Rect, Circle, Line, Text, Transformer, Image as KonvaImage } from 'react-konva'
+import { Rect, Circle, Line, Text, Transformer, Image as KonvaImage, Group } from 'react-konva'
 import Konva from 'konva'
 
 interface WhiteboardObject {
@@ -168,23 +168,52 @@ const DrawableShape = ({
       onTransformEnd: handleTransformEnd,
       onDblClick: handleDoubleClick,
       onDblTap: handleDoubleClick
-      // Removed onContextMenu: handleRightClick
     }
 
     switch (object.type) {
       case 'rectangle':
-        return (
-          <Rect
-            {...commonProps}
-            x={object.x}
-            y={object.y}
-            width={object.width || 100}
-            height={object.height || 100}
-            fill={object.fill || '#4ECDC4'}
-            stroke={object.stroke || '#333'}
-            strokeWidth={object.strokeWidth || 2}
-          />
-        )
+        // For rectangles with text, wrap both in a Group so they move together
+        if (object.text) {
+          return (
+            <Group {...commonProps}>
+              <Rect
+                x={0}
+                y={0}
+                width={object.width || 100}
+                height={object.height || 100}
+                fill={object.fill || '#4ECDC4'}
+                stroke={object.stroke || '#333'}
+                strokeWidth={object.strokeWidth || 2}
+              />
+              <Text
+                x={10}
+                y={10}
+                text={object.text}
+                fontSize={object.fontSize || 14}
+                fontFamily="Arial"
+                fill="#333"
+                width={(object.width || 100) - 20}
+                height={(object.height || 100) - 20}
+                align="center"
+                verticalAlign="middle"
+                listening={false}
+              />
+            </Group>
+          )
+        } else {
+          return (
+            <Rect
+              {...commonProps}
+              x={object.x}
+              y={object.y}
+              width={object.width || 100}
+              height={object.height || 100}
+              fill={object.fill || '#4ECDC4'}
+              stroke={object.stroke || '#333'}
+              strokeWidth={object.strokeWidth || 2}
+            />
+          )
+        }
 
       case 'circle':
         return (
@@ -279,23 +308,45 @@ const DrawableShape = ({
 
   return (
     <>
-      {renderShape()}
-
-      {/* Render text inside rectangles */}
-      {object.type === 'rectangle' && object.text && (
-        <Text
-          x={object.x + 10}
-          y={object.y + 10}
-          text={object.text}
-          fontSize={object.fontSize || 14}
-          fontFamily="Arial"
-          fill="#333"
-          width={(object.width || 100) - 20}
-          height={(object.height || 100) - 20}
-          align="center"
-          verticalAlign="middle"
-          listening={false}
-        />
+      {/* Position the group at the object's coordinates */}
+      {object.type === 'rectangle' && object.text ? (
+        <Group
+          x={object.x}
+          y={object.y}
+          ref={shapeRef}
+          draggable={true}
+          onClick={handleSelect}
+          onTap={handleSelect}
+          onDragEnd={handleDragEnd}
+          onTransformEnd={handleTransformEnd}
+          onDblClick={handleDoubleClick}
+          onDblTap={handleDoubleClick}
+        >
+          <Rect
+            x={0}
+            y={0}
+            width={object.width || 100}
+            height={object.height || 100}
+            fill={object.fill || '#4ECDC4'}
+            stroke={object.stroke || '#333'}
+            strokeWidth={object.strokeWidth || 2}
+          />
+          <Text
+            x={10}
+            y={10}
+            text={object.text}
+            fontSize={object.fontSize || 14}
+            fontFamily="Arial"
+            fill="#333"
+            width={(object.width || 100) - 20}
+            height={(object.height || 100) - 20}
+            align="center"
+            verticalAlign="middle"
+            listening={false}
+          />
+        </Group>
+      ) : (
+        renderShape()
       )}
 
       {isSelected && (
